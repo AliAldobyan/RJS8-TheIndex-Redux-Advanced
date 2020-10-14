@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import {connect} from "react-redux";
 
 // Components
 import BookTable from "./BookTable";
@@ -13,27 +14,28 @@ const instance = axios.create({
 });
 
 const AuthorDetail = props => {
-  const [author, setAuthor] = useState(null);
-  const [loading, setLoading] = useState(true);
+  //const books = props.books.filter((book) => props.authors.filter((author) => book.authors.includes(author.id)) )
+  //const [author, setAuthor] = useState(null);
+  
   const { authorID } = useParams();
-  useEffect(() => {
-    const getAuthor = async () => {
-      setLoading(true);
-      try {
-        const res = await instance.get(`/api/authors/${authorID}`);
-        const authorData = res.data;
-        setAuthor(authorData);
-        setLoading(false);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    getAuthor(authorID);
-  }, [authorID]);
+  console.log(props.authors)
+  const author = props.authors.find((author) => author.id === +authorID)
+  const books = props.books.filter((book) => author.books.includes(book.id))
+  // useEffect(() => {
+  //   const getAuthor = async () => {
+  //     setLoading(true);
+  //     try {
+  //       const res = await instance.get(`/api/authors/${authorID}`);
+  //       const authorData = res.data;
+  //       //setAuthor(authorData);
+  //       setLoading(false);
+  //     } catch (err) {
+  //       console.error(err);
+  //     }
+  //   };
+  //   getAuthor(authorID);
+  // }, [authorID]);
 
-  if (loading) {
-    return <Loading />;
-  } else {
     const authorName = `${author.first_name} ${author.last_name}`;
     return (
       <div className="author">
@@ -45,10 +47,15 @@ const AuthorDetail = props => {
             alt={authorName}
           />
         </div>
-        <BookTable books={author.books} />
+        <BookTable books={books} />
       </div>
     );
-  }
+  
 };
-
-export default AuthorDetail;
+const mapStateToProps = state =>{
+  return {  
+    authors: state.authorsState.authors,
+    books: state.booksState.books
+  }
+}
+export default connect(mapStateToProps)(AuthorDetail);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Switch, Route, Redirect } from "react-router-dom";
 import axios from "axios";
+import {connect} from "react-redux"
 
 // Components
 import Sidebar from "./Sidebar";
@@ -13,38 +14,12 @@ const instance = axios.create({
   baseURL: "https://the-index-api.herokuapp.com"
 });
 
-const App = () => {
-  const [authors, setAuthors] = useState([]);
-  const [books, setBooks] = useState([]);
-  const [loading, setLoading] = useState([]);
-
-  useEffect(() => {
-    const fetchAllAuthors = async () => {
-      const res = await instance.get("/api/authors/");
-      return res.data;
-    };
-
-    const fetchAllBooks = async () => {
-      const res = await instance.get("/api/books/");
-      return res.data;
-    };
-    const fetchAll = async () => {
-      try {
-        const authorsData = await fetchAllAuthors();
-        const booksData = await fetchAllBooks();
-
-        setAuthors(authorsData);
-        setBooks(booksData);
-        setLoading(false);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchAll();
-  }, []);
+const App = (props) => {
+ 
+  //const [loading, setLoading] = useState([]);
 
   const getView = () => {
-    if (loading) {
+    if (props.loading) {
       return <Loading />;
     } else {
       return (
@@ -54,10 +29,10 @@ const App = () => {
             <AuthorDetail />
           </Route>
           <Route path="/authors/">
-            <AuthorsList authors={authors} />
+            <AuthorsList  />
           </Route>
           <Route path="/books/:bookColor?">
-            <BookList books={books} />
+            <BookList/>
           </Route>
         </Switch>
       );
@@ -75,5 +50,9 @@ const App = () => {
     </div>
   );
 };
-
-export default App;
+const mapStateToProps = state =>{
+  return {  
+   loading : state.authorsState.loading || state.booksState.loading
+  }
+}
+export default connect(mapStateToProps) (App);
